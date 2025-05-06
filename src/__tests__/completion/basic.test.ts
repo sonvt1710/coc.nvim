@@ -908,6 +908,13 @@ describe('completion', () => {
       await helper.waitValue(() => completion.isActivated, false)
       await completion.filterResults()
     })
+
+    it('should check indent change', async () => {
+      await create(['foo', 'bar'])
+      const linenr = completion.option.linenr
+      let changed = completion.hasIndentChange({ lnum: linenr + 1, col: 1, line: '', changedtick: 0, pre: '', })
+      expect(changed).toBe(false)
+    })
   })
 
   describe('TextChangedP', () => {
@@ -1161,9 +1168,8 @@ describe('completion', () => {
       await nvim.setLine('foo.')
       await nvim.input('Ab')
       await helper.waitPopup()
-      await nvim.call('coc#pum#select_confirm')
-      let line = await nvim.line
-      expect(line).toBe('foo.bar')
+      await helper.confirmCompletion(0)
+      await helper.waitFor('getline', ['.'], 'foo.bar')
     })
 
     it('should should complete items without input', async () => {
